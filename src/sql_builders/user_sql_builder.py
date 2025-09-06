@@ -7,8 +7,8 @@ from i_sql_builders.sql_types.sql_types import TextAndParams, SqlParams
 class UserSqlBuilder(IUserSqlBuilder):
     def create_user(self, user_data: dict) -> TextAndParams:
         sql = text("""
-            INSERT INTO adv.profiles (nickname, fio, email, phone_number, password)
-            VALUES (:nickname, :fio, :email, :phone_number, :password)
+            INSERT INTO adv.profiles (id, nickname, fio, email, phone_number, password)
+            VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM adv.profiles), :nickname, :fio, :email, :phone_number, :password)
             RETURNING id, nickname, fio, email, phone_number, password
         """)
         params: SqlParams = {
@@ -22,15 +22,15 @@ class UserSqlBuilder(IUserSqlBuilder):
 
     def create_customer(self, profile_id: int, rating: int = 0) -> TextAndParams:
         sql = text("""
-            INSERT INTO adv.customers (profile_id, rating)
-            VALUES (:profile_id, :rating)
+            INSERT INTO adv.customers (id, profile_id, rating)
+            VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM adv.customers), :profile_id, :rating)
         """)
         return sql, {"profile_id": profile_id, "rating": rating}
 
     def create_seller(self, profile_id: int, rating: int = 0) -> TextAndParams:
         sql = text("""
-            INSERT INTO adv.sellers (profile_id, rating)
-            VALUES (:profile_id, :rating)
+            INSERT INTO adv.sellers (id, profile_id, rating)
+            VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM adv.sellers), :profile_id, :rating)
         """)
         return sql, {"profile_id": profile_id, "rating": rating}
 

@@ -13,3 +13,6 @@ class IDealRepository(ABC):
 
     @abstractmethod
     async def is_in_deals(self, user_id: int, advert_id: int) -> bool: ...
+
+    @abstractmethod
+    async def is_bought(self, advert_id: int) -> bool: ...

@@ -16,18 +16,24 @@
           <button type="submit">Unlike</button>
         </form>
       {% else %}
-        <button class="favorite-btn">Добавить в избранное</button>
+        <form action="/like/{{ advert.id }}" method="post">
+          <button type="submit">Like</button>
+        </form>
       {% endif %}
 
-      {% if advert.is_bought %}
+
+        {% if advert.is_really_bought %}
         <span class="bought-label">Уже куплено</span>
+      {% elif advert.is_bought %}
+        <span class="bought-label">Уже куплено by you</span>
       {% else %}
-        <button class="buy-btn">Купить</button>
+         <form action="/deal_create/{{ advert.id }}" method="post">
+          <button type="submit">Buy</button>
+        </form>
       {% endif %}
 
       {% if advert.is_created %}
         <button class="buy-btn">Удалить</button>
-        <button class="buy-btn">Редактировать</button>
       {% endif %}
 
     </div>

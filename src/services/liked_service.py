@@ -25,6 +25,7 @@ class LikedService(ILikedService):
 
     async def add_to_liked(self, user_id: int, advert_id: int) -> Optional[Liked]:
         result = await self.repo.add_to_liked(user_id, advert_id)
+        print(result)
         return result
 
     async def get_liked_by_user(self, user_id: int) -> List[Advert]:

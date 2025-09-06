@@ -15,6 +15,7 @@ class UserRepository(IUserRepository):
     async def create(self, user: User) -> Optional[User]:
         try:
             # Создаём профиль
+            print('gggg')
             sql, params = self.builder.create_user({
                 "nickname": user.nickname,
                 "fio": user.fio,
@@ -26,6 +27,7 @@ class UserRepository(IUserRepository):
             profile_row = result.mappings().first()
 
             if not profile_row:
+                print('aaaaaaaaa')
                 raise SQLAlchemyError("Failed to create profile")
 
             profile_id = profile_row["id"]
@@ -48,10 +50,12 @@ class UserRepository(IUserRepository):
                 password=user.password
             )
 
-        except IntegrityError:
+        except IntegrityError as e:
+            print(e)
             await self.session.rollback()
             return None
-        except SQLAlchemyError:
+        except SQLAlchemyError as ee:
+            print(ee)
             await self.session.rollback()
             return None
 

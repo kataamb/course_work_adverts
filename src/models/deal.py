@@ -7,5 +7,4 @@ class Deal(BaseModel):
     id_advert: int
     id_customer: int
     date_created: Optional[datetime] = None
-    status: int = 0
-    address: str | None  = "online"
+    address: str   = "online"

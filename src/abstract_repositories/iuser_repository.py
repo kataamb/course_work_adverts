@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from models.user import User
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 
 class IUserRepository(ABC):

@@ -40,3 +40,11 @@ class DealRepository(IDealRepository):
             return result.first() is not None
         except SQLAlchemyError:
             return False
+
+    async def is_bought(self, advert_id: int) -> bool:
+        try:
+            sql, params = self.builder.is_bought(advert_id)
+            result = await self.session.execute(sql, params)
+            return result.first() is not None
+        except SQLAlchemyError:
+            return False

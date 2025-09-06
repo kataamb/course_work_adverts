@@ -7,8 +7,6 @@ from services.deal_service import DealsService
 from abstract_repositories.ideal_repository import IDealRepository
 
 
-import unittest
-from unittest.mock import AsyncMock
 
 
 class TestDealsService(unittest.IsolatedAsyncioTestCase):

@@ -37,10 +37,10 @@ async def create_advert(
         advert_service = locator.advert_service()
         form_data = await request.form()
 
-        content = form_data.get("content")
-        description = form_data.get("description")
-        price = int(form_data.get("price"))
-        id_category = int(form_data.get("id_category"))
+        content = str(form_data.get("content"))
+        description = str(form_data.get("description"))
+        price = int(str(form_data.get("price")))
+        id_category = int(str(form_data.get("id_category")))
 
         advert_obj = Advert(
             content=content,
@@ -48,7 +48,6 @@ async def create_advert(
             id_category=id_category,
             price=price,
             id_seller=request.state.user["id"],
-            status=1,
         )
 
         # Создание объявления через сервис

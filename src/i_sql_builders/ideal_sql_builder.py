@@ -11,3 +11,6 @@ class IDealSqlBuilder(ABC):
 
     @abstractmethod
     def is_in_deals(self, user_id: int, advert_id: int) -> TextAndParams: ...
+
+    @abstractmethod
+    def is_bought(self, advert_id: int) -> TextAndParams: ...

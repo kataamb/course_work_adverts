@@ -7,8 +7,8 @@ from i_sql_builders.sql_types.sql_types import TextAndParams, SqlParams
 class LikedSqlBuilder(ILikedSqlBuilder):
     def add_to_liked(self, user_id: int, advert_id: int) -> TextAndParams:
         sql = text("""
-            INSERT INTO adv.likes (id_customer, id_advert)
-            VALUES (:id_customer, :id_advert)
+            INSERT INTO adv.likes (id, id_customer, id_advert)
+            VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM adv.likes), :id_customer, :id_advert)
             RETURNING id, id_customer, id_advert, date_created
         """)
         params: SqlParams = {

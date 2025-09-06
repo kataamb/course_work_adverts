@@ -3,11 +3,12 @@ from models.user import User
 from abstract_repositories.iuser_repository import IUserRepository
 from core.create_jwt import JWTManager
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
 
 
 class IAuthService(ABC):
     @abstractmethod
-    async def register(self, db: AsyncSession, user: dict) -> User: ...
+    async def register(self, db: AsyncSession, user: dict) -> Optional[User]: ...
 
     @abstractmethod
     async def login(self, db: AsyncSession, email: str, password: str) -> str: ...
@@ -24,7 +25,7 @@ class AuthService(IAuthService):
         self.user_repo = user_repo
         self.invalidated_tokens: set[str] = set()
 
-    async def register(self, db: AsyncSession, user: dict) -> User:
+    async def register(self, db: AsyncSession, user: dict) -> Optional[User]:
         if await self.user_repo.find_by_email(user["email"]):
             raise ValueError("User already exists")
         if user["password"] != user["repeat_password"]:

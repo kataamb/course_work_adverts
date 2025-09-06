@@ -21,9 +21,8 @@ async def add_like(
     liked_service = locator.liked_service()
 
     try:
-        # await liked_service.add_to_liked(user_id, item_id)  # Раскомментируйте когда будет готов метод
-        pass
-        return RedirectResponse(url=request.referrer, status_code=303)  # Вернуться на страницу, откуда пришли
+        await liked_service.add_to_liked(user_id, item_id)  # Раскомментируйте когда будет готов метод
+        return RedirectResponse(url='/', status_code=303)  # Вернуться на страницу, откуда пришли
     except Exception as e:
         return templates.TemplateResponse("error.html", {"request": request, "error": str(e)})
 

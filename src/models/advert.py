@@ -9,6 +9,5 @@ class Advert(BaseModel):
     description: str
     id_category: int
     price: int
-    status: int = 1
     id_seller: int
     date_created: Optional[datetime] = None

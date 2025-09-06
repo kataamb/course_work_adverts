@@ -1,4 +1,3 @@
-# service_locator.py
 from __future__ import annotations
 
 import asyncio
@@ -8,8 +7,8 @@ from typing import AsyncGenerator, Literal
 from fastapi import Request
 
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, AsyncEngine, async_sessionmaker
+from sqlalchemy import text
 
 from core.db import create_session
 
@@ -80,19 +79,21 @@ class ServiceLocator:
 
 # -------- Session factory
 
-async def get_sessionmaker(
-    dsn: str | None = None,
-    search_path: str = "adv",
-    max_retries: int = 5,
-    delay: int = 2,
-) -> sessionmaker:
+async def get_async_sessionmaker(
+        dsn: str | None = None,
+        search_path: str = "adv",
+        max_retries: int = 5,
+        delay: int = 2,
+) -> async_sessionmaker[AsyncSession]:
     """
-    Создаёт sessionmaker с ретраями. DSN можно передать или взять из ENV: DATABASE_URL.
+    Создаёт async_sessionmaker с ретраями. DSN можно передать или взять из ENV: DATABASE_URL.
     """
-    dsn = dsn or os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@localhost:5432/postgres")
+    dsn_str = dsn or os.getenv("DATABASE_URL")
+    if not dsn_str:
+        dsn_str = "postgresql+asyncpg://user:password@localhost:5432/postgres"
 
-    engine = create_async_engine(
-        dsn,
+    engine: AsyncEngine = create_async_engine(
+        dsn_str,
         connect_args={
             "server_settings": {
                 "search_path": search_path
@@ -103,14 +104,17 @@ async def get_sessionmaker(
 
     for attempt in range(max_retries):
         try:
-            return sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-        except OperationalError as e:
+            # Тестовое соединение с использованием text()
+            async with engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+            return async_sessionmaker(bind=engine, expire_on_commit=False)
+        except OperationalError:
             if attempt < max_retries - 1:
                 await asyncio.sleep(delay)
             else:
                 raise
-    # теоретически не дойдёт
-    return sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+    return async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
 # -------- Builder
@@ -161,10 +165,9 @@ async def build_service_locator(session: AsyncSession) -> ServiceLocator:
 
 # -------- FastAPI dependency (per-request)
 
-# Зависиомсть FastAPI: роль выбирается по request.state.user
 async def get_locator(request: Request) -> AsyncGenerator[ServiceLocator, None]:
-    role: Literal["admin", "authorized_user", "any_user"] = "authorized_user" if request.state.user else "any_user"
-    session: AsyncSession = create_session(role)
+    # Используем только admin роль
+    session: AsyncSession = create_session("admin")
     locator = await build_service_locator(session)
     try:
         yield locator
@@ -173,7 +176,8 @@ async def get_locator(request: Request) -> AsyncGenerator[ServiceLocator, None]:
 
 
 # Если где-то нужен локатор для конкретной роли (без Request)
-async def get_locator_for_role(role: Literal["admin","authorized_user","any_user"]) -> AsyncGenerator[ServiceLocator, None]:
+async def get_locator_for_role(role: Literal["admin", "authorized_user", "any_user"]) -> AsyncGenerator[
+    ServiceLocator, None]:
     session: AsyncSession = create_session(role)
     locator = await build_service_locator(session)
     try:

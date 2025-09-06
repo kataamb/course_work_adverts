@@ -11,7 +11,6 @@ user_router = APIRouter()
 # Страница логина
 @user_router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    print('ggg')
     return templates.TemplateResponse("login.html", {"request": request})
 
 
@@ -21,12 +20,11 @@ async def login(
         request: Request,
         locator: ServiceLocator = Depends(get_locator)
 ):
-    print(type(locator.session), locator.session)
     service = locator.auth_service()
     form_data = await request.form()
 
-    email = form_data.get("email")
-    password = form_data.get("password")
+    email = str(form_data.get("email"))
+    password = str(form_data.get("password"))
 
     try:
         token = await service.login(locator.session, email, password)
@@ -47,14 +45,14 @@ async def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request, "user": request.state.user})
 
 
-@user_router.post("/register")
+''''@user_router.post("/register")
 async def register(
         request: Request,
         locator: ServiceLocator = Depends(get_locator),
 ):
     service = locator.auth_service()
     form_data = await request.form()
-
+    print("^(")
     try:
         await service.register(
             locator.session,
@@ -69,6 +67,35 @@ async def register(
         )
         return RedirectResponse(url="/login", status_code=303)
     except Exception as e:
+        print(e)
+        return templates.TemplateResponse("register.html", {"request": request, "user": None, "error": str(e)})
+'''
+
+@user_router.post("/register")
+async def register(
+        request: Request,
+        locator: ServiceLocator = Depends(get_locator),
+):
+    print("=== REGISTER ROUTE CALLED ===")  # Эта строка должна появиться
+    service = locator.auth_service()
+    form_data = await request.form()
+    print("Form data:", dict(form_data))  # Проверим данные
+    print("^(")
+    try:
+        await service.register(
+            locator.session,
+            {
+                "nickname": form_data.get("nickname"),
+                "fio": form_data.get("fio"),
+                "email": form_data.get("email"),
+                "phone_number": form_data.get("phone_number"),
+                "password": form_data.get("password"),
+                "repeat_password": form_data.get("repeat_password"),
+            },
+        )
+        return RedirectResponse(url="/login", status_code=303)
+    except Exception as e:
+        print("Error in register:", e)
         return templates.TemplateResponse("register.html", {"request": request, "user": None, "error": str(e)})
 
 

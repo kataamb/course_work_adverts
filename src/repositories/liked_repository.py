@@ -16,10 +16,12 @@ class LikedRepository(ILikedRepository):
         try:
             sql, params = self.builder.add_to_liked(user_id, advert_id)
             result = await self.session.execute(sql, params)
+            print("AAAA", result)
             row = result.mappings().first()
             await self.session.commit()
             return Liked(**row) if row else None
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print('error', e)
             await self.session.rollback()
             return None
 

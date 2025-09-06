@@ -1,28 +1,32 @@
 from __future__ import annotations
 from datetime import datetime
+from uuid import uuid4
 from sqlalchemy import text
 from models.advert import Advert
 from i_sql_builders.iadvert_sql_builder import IAdvertSqlBuilder
 from i_sql_builders.sql_types.sql_types import TextAndParams, SqlParams
 
+
 class AdvertsSqlBuilder(IAdvertSqlBuilder):
     def create(self, advert: Advert) -> TextAndParams:
+        advert_id = str(uuid4())
+
         sql = text("""
-            INSERT INTO adv.adverts (content, description, id_category, price, status, id_seller)
-            VALUES (:content, :description, :id_category, :price, :status, :id_seller)
-            RETURNING id, content, description, id_category, price, status, id_seller, date_created
+            INSERT INTO adv.adverts (id, content, description, id_category, price, id_seller)
+            VALUES (:id, :content, :description, :id_category, :price, :id_seller)
+            RETURNING id, content, description, id_category, price, id_seller, date_created
         """)
         params: SqlParams = {
+            "id": advert_id,
             "content": advert.content,
             "description": advert.description,
             "id_category": advert.id_category,
             "price": advert.price,
-            "status": advert.status,
             "id_seller": advert.id_seller,
         }
         return sql, params
 
-    def get_by_id(self, advert_id: int) -> TextAndParams:
+    def get_by_id(self, advert_id: str) -> TextAndParams:  # Изменен тип на str
         return text("SELECT * FROM adv.adverts WHERE id = :id"), {"id": advert_id}
 
     def get_all(self) -> TextAndParams:
@@ -34,7 +38,7 @@ class AdvertsSqlBuilder(IAdvertSqlBuilder):
             {"user_id": user_id},
         )
 
-    def is_created(self, user_id: int, advert_id: int) -> TextAndParams:
+    def is_created(self, user_id: int, advert_id: str) -> TextAndParams:  # Изменен тип на str
         return (
             text("SELECT 1 FROM adv.adverts WHERE id_seller = :uid AND id = :aid LIMIT 1"),
             {"uid": user_id, "aid": advert_id},
@@ -57,7 +61,7 @@ class AdvertsSqlBuilder(IAdvertSqlBuilder):
             {"category_id": category_id},
         )
 
-    def delete(self, advert_id: int, user_id: int) -> TextAndParams:
+    def delete(self, advert_id: str, user_id: int) -> TextAndParams:  # Изменен тип на str
         return (
             text("DELETE FROM adv.adverts WHERE id = :advert_id AND id_seller = :user_id"),
             {"advert_id": advert_id, "user_id": user_id},

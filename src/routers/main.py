@@ -1,7 +1,3 @@
-from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -28,6 +24,7 @@ async def index(request: Request, locator: ServiceLocator = Depends(get_locator)
             dto.is_favorite = await locator.liked_service().is_liked(user_id, dto.id)
             dto.is_bought = await locator.deals_service().is_in_deals(user_id, dto.id)
             dto.is_created = await locator.advert_service().is_created(user_id, dto.id)
+            dto.is_really_bought = await locator.deals_service().is_bought(dto.id)
 
         adverts_dto.append(dto)
 

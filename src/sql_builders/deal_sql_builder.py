@@ -7,9 +7,9 @@ from i_sql_builders.sql_types.sql_types import TextAndParams, SqlParams
 class DealSqlBuilder(IDealSqlBuilder):
     def create_deal(self, user_id: int, advert_id: int, address: str = "online") -> TextAndParams:
         sql = text("""
-            INSERT INTO adv.deals (id_customer, id_advert, address)
-            VALUES (:id_customer, :id_advert, :address)
-            RETURNING id, id_customer, id_advert, date_created, address, status
+            INSERT INTO adv.deals (id, id_customer, id_advert, address)
+            VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM adv.deals), :id_customer, :id_advert, :address)
+            RETURNING id, id_customer, id_advert, date_created, address
         """)
         params: SqlParams = {
             "id_customer": user_id,
@@ -32,4 +32,10 @@ class DealSqlBuilder(IDealSqlBuilder):
         return (
             text("SELECT 1 FROM adv.deals WHERE id_customer = :uid AND id_advert = :aid LIMIT 1"),
             {"uid": user_id, "aid": advert_id}
+        )
+
+    def is_bought(self,  advert_id: int) -> TextAndParams:
+        return (
+            text("SELECT 1 FROM adv.deals WHERE id_advert = :aid LIMIT 1"),
+            {"aid": advert_id}
         )

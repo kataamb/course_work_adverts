@@ -15,6 +15,9 @@ class IDealsService(ABC):
     @abstractmethod
     async def is_in_deals(self, user_id: int, advert_id: int) -> bool: ...
 
+    @abstractmethod
+    async def is_bought(self, advert_id: int) -> bool: ...
+
 class DealsService(IDealsService):
     def __init__(self, repo: IDealRepository):
         self.repo = repo
@@ -29,6 +32,9 @@ class DealsService(IDealsService):
     async def is_in_deals(self, user_id: int, advert_id: int) -> bool:
         return await self.repo.is_in_deals(user_id, advert_id)
 
+
+    async def is_bought(self, advert_id: int) -> bool:
+        return await self.repo.is_bought(advert_id)
 
 
 
