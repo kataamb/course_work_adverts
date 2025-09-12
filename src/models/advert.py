@@ -1,13 +1,16 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from uuid import UUID
 from datetime import datetime
-from typing import Optional
 
 
 class Advert(BaseModel):
-    id: int | None = None
+    id: UUID | None  = None
     content: str
     description: str
-    id_category: int
+    id_category: UUID
     price: int
-    id_seller: int
-    date_created: Optional[datetime] = None
+    id_seller: UUID
+    date_created:  datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        from_attributes = True

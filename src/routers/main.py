@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from service_locator import get_locator, ServiceLocator
 from dto.advert_dto import AdvertWithCategoryDTO
+from uuid import UUID
 
 templates = Jinja2Templates(directory="templates")
 main_router = APIRouter()
@@ -13,6 +14,7 @@ async def index(request: Request, locator: ServiceLocator = Depends(get_locator)
     user_id = request.state.user["id"] if request.state.user else None
 
     categories = await locator.category_service().get_all()
+    print(categories)
     adverts_dto = []
 
     adverts = await locator.advert_service().get_all_adverts()
@@ -35,7 +37,7 @@ async def index(request: Request, locator: ServiceLocator = Depends(get_locator)
 
 
 @main_router.get("/category/{category_id}", response_class=HTMLResponse)
-async def adverts_by_category(request: Request, category_id: int, locator: ServiceLocator = Depends(get_locator)):
+async def adverts_by_category(request: Request, category_id: UUID, locator: ServiceLocator = Depends(get_locator)):
     user_id = request.state.user["id"] if request.state.user else None
 
     categories = await locator.category_service().get_all()

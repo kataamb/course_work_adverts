@@ -26,18 +26,20 @@ class AuthService(IAuthService):
         self.invalidated_tokens: set[str] = set()
 
     async def register(self, db: AsyncSession, user: dict) -> Optional[User]:
+
         if await self.user_repo.find_by_email(user["email"]):
             raise ValueError("User already exists")
         if user["password"] != user["repeat_password"]:
             raise ValueError("Passwords didn't matched!")
 
-        user_create = User(**user) #delete odd
+        user_create = User(**user)
+        print(user_create)
         return await self.user_repo.create(user_create)
 
     async def login(self, db: AsyncSession, email: str, password: str) -> str:
         user = await self.user_repo.find_by_email(email)
         if user and user.password == password:
-            return JWTManager.create_access_token({"sub": user.email, "id": user.id, "role": "authorized_user"})
+            return JWTManager.create_access_token({"sub": user.email, "id": str(user.id), "role": "authorized_user"})
 
         raise ValueError("Invalid credentials")
 

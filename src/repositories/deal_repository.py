@@ -6,13 +6,14 @@ from abstract_repositories.ideal_repository import IDealRepository
 from i_sql_builders.ideal_sql_builder import IDealSqlBuilder
 from models.advert import Advert
 from models.deal import Deal
+from uuid import UUID
 
 class DealRepository(IDealRepository):
     def __init__(self, session: AsyncSession, builder: IDealSqlBuilder):
         self.session = session
         self.builder = builder
 
-    async def create_deal(self, user_id: int, advert_id: int) -> Deal:
+    async def create_deal(self, user_id: UUID, advert_id: UUID) -> Deal:
         try:
             sql, params = self.builder.create_deal(user_id, advert_id)
             result = await self.session.execute(sql, params)
@@ -25,7 +26,7 @@ class DealRepository(IDealRepository):
             await self.session.rollback()
             raise e
 
-    async def get_deals_by_user(self, user_id: int) -> List[Advert]:
+    async def get_deals_by_user(self, user_id: UUID) -> List[Advert]:
         try:
             sql, params = self.builder.get_deals_by_user(user_id)
             result = await self.session.execute(sql, params)
@@ -33,7 +34,7 @@ class DealRepository(IDealRepository):
         except SQLAlchemyError:
             return []
 
-    async def is_in_deals(self, user_id: int, advert_id: int) -> bool:
+    async def is_in_deals(self, user_id: UUID, advert_id: UUID) -> bool:
         try:
             sql, params = self.builder.is_in_deals(user_id, advert_id)
             result = await self.session.execute(sql, params)
@@ -41,7 +42,7 @@ class DealRepository(IDealRepository):
         except SQLAlchemyError:
             return False
 
-    async def is_bought(self, advert_id: int) -> bool:
+    async def is_bought(self, advert_id: UUID) -> bool:
         try:
             sql, params = self.builder.is_bought(advert_id)
             result = await self.session.execute(sql, params)

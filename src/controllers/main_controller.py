@@ -7,6 +7,7 @@ from fastapi.templating import Jinja2Templates
 from service_locator import ServiceLocator
 
 from controllers.advert_controller import AdvertController
+from uuid import UUID
 
 templates = Jinja2Templates(directory="templates")
 
@@ -34,7 +35,7 @@ class MainController:
             },
         )
 
-    async def adverts_by_category(self, request: Request, category_id: int) -> HTMLResponse:
+    async def adverts_by_category(self, request: Request, category_id: UUID) -> HTMLResponse:
         user_id = request.state.user["id"] if request.state.user else None
         categories = await self.locator.category_service().get_all()
 

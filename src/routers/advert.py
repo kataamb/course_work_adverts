@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 
 from service_locator import get_locator, ServiceLocator
 from models.advert import Advert
+from uuid import UUID
 
 templates = Jinja2Templates(directory="templates")
 advert_router = APIRouter()
@@ -40,7 +41,7 @@ async def create_advert(
         content = str(form_data.get("content"))
         description = str(form_data.get("description"))
         price = int(str(form_data.get("price")))
-        id_category = int(str(form_data.get("id_category")))
+        id_category = UUID(str(form_data.get("id_category")))
 
         advert_obj = Advert(
             content=content,
@@ -53,7 +54,7 @@ async def create_advert(
         # Создание объявления через сервис
         await advert_service.create_advert(advert_obj)
 
-        return RedirectResponse(url="/profile/my_adverts", status_code=303)
+        return RedirectResponse(url="/", status_code=303)
     except Exception as e:
         # При ошибке повторно показываем форму
         categories = await locator.category_service().get_all()

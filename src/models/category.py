@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-
+from uuid import UUID
 
 class Category(BaseModel):
-    id: int | None = None
+    id: UUID
     name: str

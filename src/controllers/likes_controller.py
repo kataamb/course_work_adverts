@@ -6,6 +6,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from service_locator import ServiceLocator
+from uuid import UUID
 
 templates = Jinja2Templates(directory="templates")
 
@@ -14,7 +15,7 @@ class LikesController:
     def __init__(self, locator: ServiceLocator) -> None:
         self.locator = locator
 
-    async def add_like(self, request: Request, item_id: int) -> RedirectResponse:
+    async def add_like(self, request: Request, item_id: UUID) -> RedirectResponse:
         if not request.state.user:
             return RedirectResponse(url="/login", status_code=303)
 
@@ -28,7 +29,7 @@ class LikesController:
             # Возвращаем редирект на главную вместо шаблона ошибки
             return RedirectResponse(url='/', status_code=303)
 
-    async def remove_like(self, request: Request, item_id: int) -> RedirectResponse:
+    async def remove_like(self, request: Request, item_id: UUID) -> RedirectResponse:
         if not request.state.user:
             return RedirectResponse(url="/login", status_code=303)
 

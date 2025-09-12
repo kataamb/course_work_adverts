@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import os
 from dataclasses import dataclass
-from typing import AsyncGenerator, Literal
+from typing import AsyncGenerator
 from fastapi import Request
 
 from sqlalchemy.exc import OperationalError
@@ -60,7 +60,7 @@ class ServiceLocator:
     repositories: Repositories
     services: Services
 
-    # Удобные геттеры (по необходимости)
+    # Удобные геттеры
     def advert_service(self) -> AdvertService:
         return self.services.adverts
 
@@ -81,7 +81,7 @@ class ServiceLocator:
 
 async def get_async_sessionmaker(
         dsn: str | None = None,
-        search_path: str = "adv",
+        search_path: str = "adv_uuid",
         max_retries: int = 5,
         delay: int = 2,
 ) -> async_sessionmaker[AsyncSession]:
@@ -104,7 +104,6 @@ async def get_async_sessionmaker(
 
     for attempt in range(max_retries):
         try:
-            # Тестовое соединение с использованием text()
             async with engine.connect() as conn:
                 await conn.execute(text("SELECT 1"))
             return async_sessionmaker(bind=engine, expire_on_commit=False)
@@ -123,7 +122,7 @@ async def build_service_locator(session: AsyncSession) -> ServiceLocator:
     """
     Собирает билдеры, репозитории и сервисы на основе переданной сессии.
     """
-    # Билдеры (без состояния, можно переиспользовать)
+    # Билдеры
     adverts_builder = AdvertsSqlBuilder()
     categories_builder = CategorySqlBuilder()
     deals_builder = DealSqlBuilder()
@@ -163,10 +162,12 @@ async def build_service_locator(session: AsyncSession) -> ServiceLocator:
     )
 
 
-# -------- FastAPI dependency (per-request)
+# -------- FastAPI dependency (per-request) - только админ
 
 async def get_locator(request: Request) -> AsyncGenerator[ServiceLocator, None]:
-    # Используем только admin роль
+    """
+    Заглушка: всегда использует роль админа
+    """
     session: AsyncSession = create_session("admin")
     locator = await build_service_locator(session)
     try:
@@ -175,10 +176,12 @@ async def get_locator(request: Request) -> AsyncGenerator[ServiceLocator, None]:
         await session.close()
 
 
-# Если где-то нужен локатор для конкретной роли (без Request)
-async def get_locator_for_role(role: Literal["admin", "authorized_user", "any_user"]) -> AsyncGenerator[
-    ServiceLocator, None]:
-    session: AsyncSession = create_session(role)
+# Упрощенная версия без поддержки разных ролей
+async def get_admin_locator() -> AsyncGenerator[ServiceLocator, None]:
+    """
+    Альтернативная функция для получения локатора с ролью админа
+    """
+    session: AsyncSession = create_session("admin")
     locator = await build_service_locator(session)
     try:
         yield locator

@@ -1,15 +1,16 @@
 from datetime import datetime
 from pydantic import BaseModel
 from typing import Optional
+from uuid import UUID
 
 class AdvertWithCategoryDTO(BaseModel):
-    id: int
+    id: UUID
     content: str
     description: str
-    id_category: int
+    id_category: UUID
     category_name: str | None = None
     price: int
-    id_seller: int
+    id_seller: UUID
     seller_name: str | None = None
     date_created: Optional[datetime]
 

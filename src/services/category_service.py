@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from models.category import Category
 from abstract_repositories.icategory_repository import ICategoryRepository
+from uuid import UUID
 
 from typing import List
 
@@ -10,7 +11,7 @@ class ICategoryService(ABC):
     async def get_all(self) -> List[Category]: ...
 
     @abstractmethod
-    async def get_name_by_id(self, id_category: int) -> str: ...
+    async def get_name_by_id(self, id_category: UUID) -> str: ...
 
 
 
@@ -22,6 +23,6 @@ class CategoryService(ICategoryService):
     async def get_all(self) -> List[Category]:
         return await self.cat_repo.get_all()
 
-    async def get_name_by_id(self, id_category: int) -> str:
+    async def get_name_by_id(self, id_category: UUID) -> str:
         return await self.cat_repo.get_name_by_id(id_category)
 

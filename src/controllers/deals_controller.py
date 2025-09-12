@@ -6,6 +6,7 @@ from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from service_locator import ServiceLocator
+from uuid import UUID
 
 templates = Jinja2Templates(directory="templates")
 
@@ -14,7 +15,7 @@ class DealsController:
     def __init__(self, locator: ServiceLocator) -> None:
         self.locator = locator
 
-    async def create_deal(self, request: Request, item_id: int) -> Union[RedirectResponse, HTMLResponse]:
+    async def create_deal(self, request: Request, item_id: UUID) -> Union[RedirectResponse, HTMLResponse]:
         if not request.state.user:
             return RedirectResponse(url="/login", status_code=303)
 

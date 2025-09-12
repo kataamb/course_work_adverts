@@ -5,6 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from abstract_repositories.icategory_repository import ICategoryRepository
 from i_sql_builders.icategory_sql_builder import ICategorySqlBuilder
 from models.category import Category
+from uuid import UUID
 
 class CategoryRepository(ICategoryRepository):
     def __init__(self, session: AsyncSession, builder: ICategorySqlBuilder):
@@ -15,11 +16,13 @@ class CategoryRepository(ICategoryRepository):
         try:
             sql, params = self.builder.get_all()
             result = await self.session.execute(sql, params)
+            print(result)
             return [Category(**row) for row in result.mappings()]
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print(e)
             return []
 
-    async def get_name_by_id(self, id_category: int) -> str:
+    async def get_name_by_id(self, id_category: UUID) -> str:
         try:
             sql, params = self.builder.get_name_by_id(id_category)
             result = await self.session.execute(sql, params)

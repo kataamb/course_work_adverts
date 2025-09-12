@@ -1,4 +1,5 @@
-from typing import Optional, List
+from typing import List
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from abstract_repositories.iadvert_repository import IAdvertRepository
@@ -11,28 +12,30 @@ class AdvertsRepository(IAdvertRepository):
         self.session = session
         self.builder = builder
 
-    async def create(self, advert: Advert) -> Optional[Advert]:
+    async def create(self, advert: Advert) -> Advert:
         try:
             sql, params = self.builder.create(advert)
             result = await self.session.execute(sql, params)
             row = result.mappings().first()
             await self.session.commit()
-            return Advert(**row) if row else None
+            return Advert(**row)
         except IntegrityError:
             await self.session.rollback()
-            return None
+            raise
         except SQLAlchemyError:
             await self.session.rollback()
-            return None
+            raise
 
-    async def get_by_id(self, advert_id: int) -> Optional[Advert]:
+    async def get_by_id(self, advert_id: UUID) -> Advert:
         try:
             sql, params = self.builder.get_by_id(advert_id)
             result = await self.session.execute(sql, params)
             row = result.mappings().first()
-            return Advert(**row) if row else None
+            if not row:
+                raise ValueError(f"Advert with id {advert_id} not found")
+            return Advert(**row)
         except SQLAlchemyError:
-            return None
+            raise
 
     async def get_all_adverts(self) -> List[Advert]:
         try:
@@ -42,7 +45,7 @@ class AdvertsRepository(IAdvertRepository):
         except SQLAlchemyError:
             return []
 
-    async def get_advert_by_user(self, user_id: int) -> List[Advert]:
+    async def get_advert_by_user(self, user_id: UUID) -> List[Advert]:
         try:
             sql, params = self.builder.get_by_user(user_id)
             result = await self.session.execute(sql, params)
@@ -50,10 +53,13 @@ class AdvertsRepository(IAdvertRepository):
         except SQLAlchemyError:
             return []
 
-    async def is_created(self, user_id: int, advert_id: int) -> bool:
-        sql, params = self.builder.is_created(user_id, advert_id)
-        result = await self.session.execute(sql, params)
-        return result.first() is not None
+    async def is_created(self, user_id: UUID, advert_id: UUID) -> bool:
+        try:
+            sql, params = self.builder.is_created(user_id, advert_id)
+            result = await self.session.execute(sql, params)
+            return result.first() is not None
+        except SQLAlchemyError:
+            return False
 
     async def get_adverts_by_key_word(self, key_word: str) -> List[Advert]:
         try:
@@ -71,7 +77,7 @@ class AdvertsRepository(IAdvertRepository):
         except SQLAlchemyError:
             return []
 
-    async def get_adverts_by_category(self, category_id: int) -> List[Advert]:
+    async def get_adverts_by_category(self, category_id: UUID) -> List[Advert]:
         try:
             sql, params = self.builder.by_category(category_id)
             result = await self.session.execute(sql, params)
@@ -79,10 +85,11 @@ class AdvertsRepository(IAdvertRepository):
         except SQLAlchemyError:
             return []
 
-    async def delete_advert(self, advert_id: int, user_id: int) -> None:
+    async def delete_advert(self, advert_id: UUID, user_id: UUID) -> None:
         try:
             sql, params = self.builder.delete(advert_id, user_id)
             await self.session.execute(sql, params)
             await self.session.commit()
         except SQLAlchemyError:
             await self.session.rollback()
+            raise

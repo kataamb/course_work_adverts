@@ -27,6 +27,7 @@ async def login(
     password = str(form_data.get("password"))
 
     try:
+        print(email, password)
         token = await service.login(locator.session, email, password)
         response = RedirectResponse(url="/", status_code=303)
         response.set_cookie(key="access_token", value=token, httponly=True)
@@ -82,6 +83,7 @@ async def register(
     print("Form data:", dict(form_data))  # Проверим данные
     print("^(")
     try:
+        print('here')
         await service.register(
             locator.session,
             {

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-
+from uuid import UUID
 from service_locator import get_locator, ServiceLocator
 
 templates = Jinja2Templates(directory="templates")
@@ -11,7 +11,7 @@ likes_router = APIRouter()
 @likes_router.post("/like/{item_id}")
 async def add_like(
         request: Request,
-        item_id: int,
+        item_id: UUID,
         locator: ServiceLocator = Depends(get_locator)
 ):
     if not request.state.user:
@@ -30,7 +30,7 @@ async def add_like(
 @likes_router.post("/unlike/{item_id}")
 async def remove_like(
         request: Request,
-        item_id: int,
+        item_id: UUID,
         locator: ServiceLocator = Depends(get_locator)
 ):
     if not request.state.user:

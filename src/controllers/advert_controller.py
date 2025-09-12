@@ -8,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 from service_locator import ServiceLocator
 from models.advert import Advert
 from dto.advert_dto import AdvertWithCategoryDTO
+from uuid import UUID
 
 templates = Jinja2Templates(directory="templates")
 
@@ -48,7 +49,7 @@ class AdvertController:
 
             # Преобразуем в int только если значения существуют и являются цифрами
             price = int(str(price_str)) if str(price_str) and str(price_str).isdigit() else 0
-            id_category = int(str(id_category_str)) if str(id_category_str) and str(id_category_str).isdigit() else 0
+            id_category = UUID(str(id_category_str))
 
             advert_obj = Advert(
                 content=content,
@@ -84,7 +85,7 @@ class AdvertController:
                 }
             )
 
-    async def _create_advert_dto(self, advert: Advert, user_id: int | None = None) -> AdvertWithCategoryDTO:
+    async def _create_advert_dto(self, advert: Advert, user_id: UUID | None = None) -> AdvertWithCategoryDTO:
         dto = AdvertWithCategoryDTO(**advert.model_dump())
         dto.category_name = await self.locator.category_service().get_name_by_id(dto.id_category)
 
@@ -96,7 +97,7 @@ class AdvertController:
 
         return dto
 
-    async def get_adverts_with_dto(self, adverts: List[Advert], user_id: int | None = None) -> List[
+    async def get_adverts_with_dto(self, adverts: List[Advert], user_id: UUID | None = None) -> List[
         AdvertWithCategoryDTO]:
         adverts_dto = []
         for advert in adverts:

@@ -3,6 +3,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from service_locator import get_locator, ServiceLocator
+from uuid import UUID
 
 templates = Jinja2Templates(directory="templates")
 deals_router = APIRouter()
@@ -11,7 +12,7 @@ deals_router = APIRouter()
 @deals_router.post("/deal_create/{item_id}")
 async def create_deal(
         request: Request,
-        item_id: int,
+        item_id: UUID,
         locator: ServiceLocator = Depends(get_locator)
 ):
     if not request.state.user:

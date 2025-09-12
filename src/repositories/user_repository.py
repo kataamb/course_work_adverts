@@ -1,5 +1,5 @@
-# repositories/user_repository.py
 from typing import Optional
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from abstract_repositories.iuser_repository import IUserRepository
@@ -12,10 +12,9 @@ class UserRepository(IUserRepository):
         self.session = session
         self.builder = builder
 
-    async def create(self, user: User) -> Optional[User]:
+    async def create(self, user: User) -> User:
         try:
             # Создаём профиль
-            print('gggg')
             sql, params = self.builder.create_user({
                 "nickname": user.nickname,
                 "fio": user.fio,
@@ -27,7 +26,6 @@ class UserRepository(IUserRepository):
             profile_row = result.mappings().first()
 
             if not profile_row:
-                print('aaaaaaaaa')
                 raise SQLAlchemyError("Failed to create profile")
 
             profile_id = profile_row["id"]
@@ -41,6 +39,7 @@ class UserRepository(IUserRepository):
             await self.session.execute(sql, params)
 
             await self.session.commit()
+
             return User(
                 id=profile_id,
                 nickname=user.nickname,
@@ -51,15 +50,13 @@ class UserRepository(IUserRepository):
             )
 
         except IntegrityError as e:
-            print(e)
             await self.session.rollback()
-            return None
-        except SQLAlchemyError as ee:
-            print(ee)
+            raise e
+        except SQLAlchemyError as e:
             await self.session.rollback()
-            return None
+            raise e
 
-    async def delete(self, profile_id: int) -> bool:
+    async def delete(self, profile_id: UUID) -> bool:
         try:
             sql, params = self.builder.delete_customer(profile_id)
             await self.session.execute(sql, params)
@@ -81,6 +78,8 @@ class UserRepository(IUserRepository):
             sql, params = self.builder.find_by_email(email)
             result = await self.session.execute(sql, params)
             row = result.mappings().first()
-            return User(**row) if row else None
+            if not row:
+                return None
+            return User(**row)
         except SQLAlchemyError:
             return None
